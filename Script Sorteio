@@ -1,0 +1,284 @@
+host = "Lucas11#5331"
+admin = {"Eduratoooh#6606", "Lucas15#9540"}
+nome = "Teste" -- Nome do Sorteio
+limite = 2 -- Limite de Vitórias
+sorteios = 10 -- Quantidade de Sorteios
+mapa = [[<C><P L="1000" D="x_transformice/x_maps/x_peche2023/bateau.png,718,48;x_transformice/x_maps/x_peche2023/mat.png,660,-226;x_transformice/x_maps/x_peche2023/fond.jpg,-184,-127" DS="m;156,338,366,341,611,342,829,306" Ca="" MEDATA=";;;;0,1-0;0:::1-"/><Z><S><S T="12" X="453" Y="377" L="910" H="48" P="0,0,0.3,0.2,0,0,0,0" o="12bd94" m=""/><S T="12" X="287" Y="362" L="105" H="43" P="0,0,0.3,0.2,-20,0,0,0" o="12bd94" m=""/><S T="12" X="44" Y="301" L="187" H="43" P="0,0,0.3,0.2,60,0,0,0" o="12bd94" m=""/><S T="12" X="112" Y="362" L="119" H="43" P="0,0,0.3,0.2,30,0,0,0" o="12bd94" m=""/><S T="12" X="167" Y="251" L="61" H="27" P="0,0,0.3,0.2,-20,0,0,0" o="12bd94" m=""/><S T="12" X="215" Y="222" L="59" H="27" P="0,0,0.3,0.2,-50,0,0,0" o="12bd94" m=""/><S T="12" X="237" Y="201" L="23" H="27" P="0,0,0.3,0.2,0,0,0,0" o="12bd94" m=""/><S T="12" X="910" Y="372" L="34" H="53" P="0,0,0.3,0.2,30,0,0,0" o="12bd94" m=""/><S T="12" X="413" Y="365" L="161" H="43" P="0,0,0.3,0.2,0,0,0,0" o="12bd94" m=""/><S T="12" X="566" Y="373" L="161" H="43" P="0,0,0.3,0.2,20,0,0,0" o="12bd94" m=""/><S T="12" X="772" Y="241" L="412" H="23" P="0,0,0.3,0.2,0,0,0,0" o="12bd94" m=""/><S T="12" X="679" Y="363" L="161" H="43" P="0,0,0.3,0.2,-20,0,0,0" o="12bd94" m=""/><S T="12" X="844" Y="336" L="190" H="43" P="0,0,0.3,0.2,0,0,0,0" o="12bd94" m=""/><S T="12" X="8" Y="187" L="423" H="20" P="0,0,0.3,0.2,-90,0,0,0" o="12bd94" m=""/><S T="12" X="990" Y="190" L="420" H="20" P="0,0,0,0.2,-90,0,0,0" o="12bd94" m=""/><S T="12" X="499" Y="-24" L="1002" H="25" P="0,0,0.3,0.2,0,0,0,0" o="12bd94" m=""/></S><D/><O/><L/></Z></C>]]
+
+participante = {}
+ganhadores = {}
+inicio = false
+fim = false
+finall = false
+rodada = 1
+qtd = 0
+fast = 0
+t = 0
+time = 0
+
+function eventTextAreaCallback(id, p, cmd)
+	if cmd == "entrada" then
+		ui.addTextArea(0, "<p align='center'>Participando", p, 200, 370, 400, 20, 1, 0x00ff00, 0.8,true)
+		entrada(p, #participante + 1)
+	elseif cmd == "inicio" then
+		ui.addPopup(0, 2, "<p align='center'>Quantidade de sorteados", p, 300, 200, 200, true)
+	elseif cmd == "novo" then
+		novo()
+	elseif cmd == "fechar" then
+		ui.removeTextArea(1000, p)
+		ui.removeTextArea(1001, p)
+		ui.removeTextArea(1002, p)
+		ui.removeTextArea(1003, p)
+		for g=1, #ganhadores do
+			ui.removeTextArea(g + 100000, p)
+		end
+	end
+end
+
+function eventNewPlayer(p)
+	for all in pairs(tfm.get.room.playerList) do
+		tfm.exec.setPlayerScore(all, 0, false)
+	end	
+	for g=1, #ganhadores do
+		tfm.exec.setPlayerScore(ganhadores[g], 1, true)
+	end
+	if finall == false and inicio == false or finall == false and fim == false then
+		ui.addTextArea(0, "<p align='center'><font size='15'><b>Verificando dados...", p, 200, 365, 400, 25, 1, 0xffff00, 0.8, true)
+	if time < 0 then
+		time = 5
+		ui.addTextArea(-3, "<p align='center'><font size='30px'>"..nome, p, 5, 40, 795, 40, 1, 1, 0.8, true)
+		ui.addTextArea(-10, "<p align='center'>Sorteio: "..rodada.."/"..sorteios.."", p, 5, 370, 150, 20, 1, 0x00ff00, 0.8,true)
+		tfm.exec.setUIMapName("<font color='#00FF00'>Ilha dos Perdidos")
+		tfm.exec.respawnPlayer(p)
+	end
+	end
+	if finall == false and inicio == true or finall == false and fim == true then
+		ui.addTextArea(-10, "<p align='center'>Sorteio: "..rodada.."/"..sorteios.."", p, 5, 370, 150, 20, 1, 0x00ff00, 0.8,true)
+		tfm.exec.setUIMapName("<font color='#00FF00'>Ilha dos Perdidos")
+		ui.removeTextArea(0, nil)
+		tfm.exec.respawnPlayer(p)
+	end
+	if finall == true then
+		tfm.exec.respawnPlayer(p)
+		tfm.exec.setUIMapName("<font color='#00FF00'>Ilha dos Perdidos")
+		final()
+	end
+end
+
+function eventPlayerDied(p)
+	tfm.exec.respawnPlayer(p)
+end
+
+local isAdmin = function(name) for _,n in next, admin do if n == name then return true end end return false end 
+
+function eventPopupAnswer(id, p, cmd)
+	if tonumber(cmd, 10) then
+		if tonumber(cmd, 10) >= 1 and tonumber(cmd, 10) <= #participante then
+			ui.removeTextArea(0, nil)
+			ui.removeTextArea(-1, nil)
+			qtd = tonumber(cmd, 10)
+			fast = math.random(5,15)
+			inicio = true
+		end
+	end
+	if id == 1 then
+    nome = cmd
+    ui.addTextArea(-3, "<p align='center'><font size='30px'>"..nome, nil, 5, 40, 795, 40, 1, 1, 0.8, true)
+	end
+end
+
+local split = function(t,s)
+    if type(t) ~= "string" then
+        error("String expected for the first argument, got "..type(t), 2)
+    end
+    if s and type(s) ~= "string" then
+        error("String or nil expected for the second argument, got "..type(t), 2)
+    end
+    -- retorna uma table com a string dividida
+    -- -- String t = texto a ser dividido
+    -- -- String s = símbolo de separação (opcional)
+    local a={}
+    for i,v in string.gmatch(t,string.format("[^%s]+",s or "%s")) do
+        table.insert(a,i)
+    end
+    return a
+end
+
+function eventChatCommand(name, cmd)
+ if isAdmin(name) == true or name == host then
+	if cmd == "help" then
+    ui.addTextArea(1000, "<p align='center'><font size='16'><b>Lista de Comandos</b>\n\n<font size='12'><R>!help</R> - Mostra a lista de comandos;\n<R>!listg</R> - Mostra a lista de ganhadores;\n<R>!settitle</R> - Muda o titúlo do sorteio;\n<R>!setlimit [número]</R> - Muda o limite de vitórias por pessoa;\n<R>!setsorteios [número]</R> - Muda a quantidade de sorteios;\n<R>!resetmap</R> - Reseta o mapa; \n<R>!info</R> - Mostra informações sobre o sorteio no #lua; \n<R>!novo</R> - Use caso o botão 'Novo sorteio' não funcione; \n<R>!inicio</R> - Use caso o botão 'Iniciar' não funcione.", name, 225, 95, 350, 250, 1, 0xff0000, 1, true)
+    ui.addTextArea(1001, "<p align='center'><font size='12'><a href='event:fechar'>Fechar", name, 225, 325, 350, nil, 0, 0, 0, true)
+	end
+	if cmd == "listg" then
+    ui.addTextArea(1002, "<p align='center'><font size='16'><b>Lista de Ganhadores</b>\n\n<font size='12'>", name, 222, 95, 360, 250, 1, 0xff0000, 1, true)
+    ui.addTextArea(1003, "<p align='center'><font size='12'><a href='event:fechar'>Fechar", name, 222, 325, 360, nil, 0, 0, 0, true)
+    local listag = {}
+		for g=1, #ganhadores do
+			listag[g] = g
+			ui.addTextArea(g +100000, "<J>"..g.."</J>- "..ganhadores[g], name, ((g-1)%3)*110+230, math.floor((g-1)/3)*20+130, 130, 20, 1, 1, 1, true)
+	    end
+    print(ganhadores)
+	end
+	if cmd == "settitle" then
+		ui.addPopup(1, 2, "<p align='center'>Escolha o Titulo", name, 300, 200, 200, true)
+		print("<PT>Nome do Sorteio:</PT><N> "..nome.."")
+	end
+	if cmd == "novo" then
+		novo()
+	end
+	if cmd == "resetmap" then
+		tfm.exec.newGame(mapa)
+		tfm.exec.setUIMapName("<font color='#00FF00'>Ilha dos Perdidos")
+		print("<N>"..name.."</N> <PT>resetou o mapa.</PT>")
+	end
+	if cmd == "inicio" then
+		ui.addPopup(0, 2, "<p align='center'>Quantidade de sorteados", name, 300, 200, 200, true)
+	end
+	if cmd == "info" then
+		print("\n<N><PT>Nome do Sorteio:</PT> "..nome.."\n<PT>Limite de Vitórias:</PT> "..limite.."\n<PT>Quantidade de Sorteios:</PT> "..sorteios.."")
+	end
+	local args = split(cmd)
+	if args[1] == "setlimit" and args[2] then
+    limite = args[2]
+    print("<PT>Limite de vitórias = </PT><N>"..limite)
+    limit()
+	end
+	if args[1] == "setsorteios" and args[2] then
+    sorteios = args[2]
+    if not inicio and not fim then
+		ui.addTextArea(-10, "<p align='center'>Sorteio: "..rodada.."/"..sorteios.."", nil, 5, 370, 150, 20, 1, 0x00ff00, 0.8,true)
+		print("<PT>Quantidade de Sorteios:</PT> <N>"..sorteios.."")
+    end
+	end
+ end
+end
+
+function participando(p)
+	for i, v in pairs(participante) do
+		if v == p then
+			return true
+		end
+	end
+	return false
+end
+
+function limit()
+	for k, v in next, tfm.get.room.playerList do
+    if v.score < limite * 1 and not participando(p) then
+       ui.addTextArea(0, "<p align='center'><a href='event:entrada'><font size='15'><b>Clique aqui para participar do sorteio!", v.playerName, 200, 365, 400, 25, 1, 0xffff00, 0.8, true)
+    end
+    if v.score >= limite * 1 then
+       ui.addTextArea(0, "<p align='center'><font size='15'><b>Você atingiu o limite de vitórias", v.playerName, 200, 365, 400, 25, 1, 0xff0000, 0.8, true)
+    end
+	end
+end
+
+function final()
+  finall = true
+  ui.addTextArea(10000, "<p align='center'>\n<font size='70'><VP>?</VP> <font size='40'><BV>OBRIGADO POR PARTICIPAR</BV> <font size='70'><VP>?</VP>\n\n<N><font size='25'>Não fique triste se não ganhou dessa vez.\nTeremos mais sorteios em breve!!</N> \n\n<J>Ganhadores:</J>", nil, 0, 0, 800, 400, 1, 0x0000ff, 0.8,true)
+  ui.removeTextArea(0, nil)
+  ui.removeTextArea(-1, nil)
+  ui.removeTextArea(-3, nil)
+  ui.removeTextArea(-10, nil)
+	local lista = {}
+	for i=1, #ganhadores do
+		lista[i] = i
+		ui.addTextArea(i, ganhadores[i], nil, ((i-1)%8)*100+5, math.floor((i-1)/8)*15+315, 90, 20, 0, 0, 0 ,true)
+	end
+end
+
+function entrada(p, num)
+	if not participando(p) then
+		participante[num] = p
+		ui.addTextArea(num, "<p align='center'>" .. p, nil, ((num-1)%10)*100+5, math.floor((num-1)/10)*30+100, 90, 20, 1, 1, 0.8, false)
+	end
+end
+
+function novo()
+	for i=1, #participante do
+		ui.removeTextArea(i, nil)
+		table.remove(participante, 1)
+	end
+	ui.addTextArea(0, "<p align='center'><a href='event:entrada'><font size='15'><b>Clique aqui para participar do sorteio!", nil, 200, 365, 400, 25, 1, 0xffff00, 0.8, true)
+	ui.addTextArea(-1, "<p align='center'><a href='event:inicio'>Iniciar", host, 650, 370, 100, 20, 1, 0x0000ff, 0.8,true)
+	ui.removeTextArea(-100, nil)
+	tfm.exec.removePhysicObject(0)
+	fim = false
+	limit()
+	if rodada < sorteios + 1 then
+    rodada = rodada + 1
+    ui.addTextArea(-10, "<p align='center'>Sorteio: "..rodada.."/"..sorteios.."", nil, 5, 370, 150, 20, 1, 0x00ff00, 0.8,true)
+	end
+	if rodada == sorteios + 1 then
+    final()
+	end
+end
+
+function sorteio(tipo)
+	local lista = {}
+	local sorteado = 0
+	for i=1, #participante do
+		lista[i] = i
+	end
+	local rand = 0
+	for i, v in pairs(participante) do
+		ui.addTextArea(i, "<p align='center'>" .. v, nil, ((i-1)%10)*100+5, math.floor((i-1)/10)*30+100, 90, 20, 1, 1, 0.8, false)
+	end
+	for i=1, qtd do
+		sorteado = math.random(#lista)
+		rand = lista[sorteado]
+		table.remove(lista, sorteado)
+		if tipo == "quase" then
+			ui.addTextArea(rand, "<p align='center'><font color='#ffff00'>" .. participante[rand], nil, ((rand-1)%10)*100+5, math.floor((rand-1)/10)*30+100, 90, 20, 1, 0xffff00, 0.8, false)
+		elseif tipo == "final" then
+			ui.addTextArea(rand, "<p align='center'><font color='#00ff00'><b>" ..participante[rand], nil, ((rand-1)%10)*100+5, math.floor((rand-1)/10)*30+100, 90, 20, 1, 0x00ff00, 0.8, false)
+			table.insert(ganhadores, participante[rand])
+			tfm.exec.setPlayerScore(participante[rand], 1, true)
+		end
+	end
+end
+
+function eventLoop()
+	t = t +0.5
+	if t == 1 then
+		t = 0
+		time = time -1
+	end
+	if time == 0 then
+    limit()
+	end
+	if inicio then
+		if fast > 0 then
+			sorteio("quase")
+			fast = fast - 1
+		else
+			sorteio("final")
+			inicio = false
+			fim = true
+			ui.addTextArea(-1, "<p align='center'><a href='event:novo'>Novo sorteio", host, 650, 370, 100, 20, 1, 0x0000ff, 0.8,true)
+		end
+	end
+	if fim then
+		for i=1, 50 do
+			tfm.exec.displayParticle(math.random(21,24), math.random(1,800), 20, math.random(-20,20)/100, math.random(10,1000)/100, 0, 0, nil)
+		end
+	end
+end
+
+system.disableChatCommandDisplay(nil, true)
+tfm.exec.disableAutoShaman(true)
+tfm.exec.disableAutoNewGame(true)
+tfm.exec.disableAfkDeath(true)
+tfm.exec.disableMinimalistMode(true)
+tfm.exec.disablePhysicalConsumables(true)
+tfm.exec.newGame(mapa)
+for all in pairs(tfm.get.room.playerList) do
+	tfm.exec.setPlayerScore(all, 0, false)
+end
+print("\n<N><PT>Nome do Sorteio:</PT> "..nome.."\n<PT>Limite de Vitórias:</PT> "..limite.."\n<PT>Quantidade de Sorteios:</PT> "..sorteios.."")
+ui.addTextArea(0, "<p align='center'><a href='event:entrada'><font size='15'><b>Clique aqui para participar do sorteio!", nil, 200, 365, 400, 25, 1, 0xffff00, 0.8, true)
+ui.addTextArea(-1, "<p align='center'><a href='event:inicio'>Iniciar", host, 650, 370, 100, 20, 1, 0x0000ff, 0.8,true)
+ui.addTextArea(-3, "<p align='center'><font size='30px'>"..nome, nil, 5, 40, 795, 40, 1, 1, 0.8, true)
+ui.addTextArea(-10, "<p align='center'>Sorteio: "..rodada.."/"..sorteios.."", nil, 5, 370, 150, 20, 1, 0x00ff00, 0.8,true)
+tfm.exec.setUIMapName("<font color='#00FF00'>Ilha dos Perdidos")
