@@ -165,11 +165,14 @@ end
 
 function limit()
 	for k, v in next, tfm.get.room.playerList do
-    if v.score < limite * 1 and not participando(p) then
+    if v.score < limite * 1 and not participando(v.playerName) then
        ui.addTextArea(0, "<p align='center'><a href='event:entrada'><font size='15'><b>Clique aqui para participar do sorteio!", v.playerName, 200, 365, 400, 25, 1, 0xffff00, 0.8, true)
     end
     if v.score >= limite * 1 then
        ui.addTextArea(0, "<p align='center'><font size='15'><b>Você atingiu o limite de vitórias", v.playerName, 200, 365, 400, 25, 1, 0xff0000, 0.8, true)
+    end
+    if participando(v.playerName) then
+       ui.addTextArea(0, "<p align='center'>Participando", v.playerName, 200, 370, 400, 20, 1, 0x00ff00, 0.8,true)
     end
 	end
 end
